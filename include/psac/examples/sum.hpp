@@ -1,5 +1,5 @@
-#ifndef PSAC_EXAMPLES_SUM_SQUARES_HPP_
-#define PSAC_EXAMPLES_SUM_SQUARES_HPP_
+#ifndef PSAC_EXAMPLES_SUM_HPP_
+#define PSAC_EXAMPLES_SUM_HPP_
 
 #include <mutex>
 #include <psac/psac.hpp>
