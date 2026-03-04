@@ -7,6 +7,8 @@ cmake-build-release/
 
 # IDE files
 .idea/
+.vscode/
+psac.pdf
 
 # Vim swap files
 *.swp

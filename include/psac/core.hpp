@@ -56,7 +56,7 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
     assert(_parent != nullptr);                                               \
     *_node = std::make_unique<psac::SNode>(_parent);                          \
   }                                                                           \
-  return (*_node)->template alloc<type>();                                    \
+  return (*_node)->alloc<type>();                                    \
 }()
 
 #define _PSAC_ALLOC_ARRAY(type, size)                                         \
@@ -65,7 +65,7 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
     assert(_parent != nullptr);                                               \
     *_node = std::make_unique<psac::SNode>(_parent);                          \
   }                                                                           \
-  return (*_node)->template alloc_array<type>(size);                          \
+  return (*_node)->alloc_array<type>(size);                          \
 }()
 
 #define _PSAC_PAR(_left_code, _right_code)                                    \
@@ -74,9 +74,9 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
     assert(_parent != nullptr);                                               \
     *_node = std::make_unique<psac::SNode>(_parent);                          \
   }                                                                           \
-  auto _left = (*_node)-> template make_left<psac::PNode>();                  \
-  _left-> template make_left<psac::SNode>();                                  \
-  _left-> template make_right<psac::SNode>();                                 \
+  auto _left = (*_node)->make_left<psac::PNode>();                  \
+  _left->make_left<psac::SNode>();                                  \
+  _left->make_right<psac::SNode>();                                 \
   auto _l_f = [&]([[maybe_unused]] std::unique_ptr<psac::SPNode>* _node) {    \
     assert(_node != nullptr);                                                 \
     [[maybe_unused]] psac::SPNode* _parent = nullptr;                         \
@@ -132,7 +132,7 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
     _body ;                                                                   \
   };                                                                          \
   auto _mod_tuple = std::make_tuple _mods;                                    \
-  auto _left = (*_node)-> template make_read_tuple_node(_read_f, _mod_tuple); \
+  auto _left = (*_node)->make_read_tuple_node(_read_f, _mod_tuple); \
   _left->execute((*_node)->left);                                             \
   _parent = (*_node).get();                                                   \
   _node = &((*_node)->right);                                                 \
@@ -151,7 +151,7 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
     [[maybe_unused]] psac::SPNode* _parent = nullptr;                         \
     _body ;                                                                   \
   };                                                                          \
-  auto _left = (*_node)-> template make_read_array_node(_read_f,_mod_its);    \
+  auto _left = (*_node)->make_read_array_node(_read_f,_mod_its);    \
   _left->execute((*_node)->left);                                             \
   _parent = (*_node).get();                                                   \
   _node = &((*_node)->right);                                                 \
@@ -170,7 +170,7 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
     [[maybe_unused]] psac::SPNode* _parent = nullptr;                         \
     _body ;                                                                   \
   };                                                                          \
-  auto _left = (*_node)-> template make_scope_read_node(_read_f);             \
+  auto _left = (*_node)->make_scope_read_node(_read_f);             \
   _left->execute((*_node)->left);                                             \
   _parent = (*_node).get();                                                   \
   _node = &((*_node)->right);                                                 \
