@@ -1,4 +1,3 @@
-
 #include<array>
 #include<iostream>
 #include<memory>
@@ -45,6 +44,10 @@ int main() {
   std::cout << "True sum = " << 2*truesum << std::endl;
   std::cout << "Result = " << result.value << std::endl;
   assert(result.value == 2*truesum);
+
+  std::cout << "Another recompute\n";
+  A[1].write(rand() % 10);
+  psac_propagate(computation);
 
   psac::GarbageCollector::run();
 }

@@ -4,6 +4,9 @@
 
 #include <psac/psac.hpp>
 
+
+#define LOG_WORKER(TEXT) std::cout << "A"; 
+
 // ----------------------------------------------------------------------------
 //                               EXAMPLE
 // ----------------------------------------------------------------------------
@@ -22,6 +25,7 @@ psac_function(map, It in_begin, It in_end, It out_begin, std::function<int(int)>
     auto in_mod = to_ptr(in_begin + i);
     auto out_mod = to_ptr(out_begin + i);
     psac_read((auto x), (in_mod), {
+      LOG_WORKER("RECOMPUTE");
       psac_write(out_mod, f(x));
     });
   });
@@ -124,7 +128,9 @@ psac_function(map_chunks_granular, It in_begin, It in_end, It out_begin,
 template<typename It>
 psac_function(sum, It in_begin, It in_end, psac::Mod<int>* result) {
   if (in_begin + 1 == in_end) {
-    psac_read((auto x), (&(*in_begin)), { psac_write(result, x); });
+    psac_read((auto x), (&(*in_begin)), { 
+  LOG_WORKER(" leaf") 
+      psac_write(result, x); });
   }
   else {
     auto in_mid = in_begin + std::distance(in_begin, in_end) / 2;
@@ -135,6 +141,7 @@ psac_function(sum, It in_begin, It in_end, psac::Mod<int>* result) {
       psac_call(sum, in_mid, in_end, right_result)
     );
     psac_read((auto x, auto y), (left_result, right_result), {
+      LOG_WORKER("sum") 
       psac_write(result, x + y);
     });
   }
