@@ -16,3 +16,9 @@ target_compile_options(raytracer PRIVATE
   -Wall -Wextra -Wfatal-errors
 )
 
+add_executable(sum sum.cpp)
+target_link_libraries(sum PRIVATE psac)
+target_compile_options(sum PRIVATE
+  -Wall -Wextra -Wfatal-errors
+)
+

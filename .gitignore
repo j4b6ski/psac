@@ -45,3 +45,5 @@ psac.pdf
 *.exe
 *.out
 *.app
+
+.cache/
