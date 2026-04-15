@@ -78,7 +78,7 @@ struct ModBase {
   ConcurrentReaderSet<RNode> readers;
 
   // Only store the written flag when compiling for debugging
-#ifndef DNDEBUG
+#ifndef NDEBUG
   bool written = false;
 #endif  
 };
@@ -222,11 +222,11 @@ struct AnyMod {
   template<typename T>
   AnyMod(type_tag<T>) {
     if constexpr(sizeof(T) <= 8) {
-      //static_assert(sizeof(AnyModInline<T>) <= 24);
+      static_assert(sizeof(AnyModInline<T>) <= sizeof(storage));
       new (&storage) AnyModInline<T>();
     }
     else {
-      //static_assert(sizeof(AnyModIndirect<T>) <= 24);
+      static_assert(sizeof(AnyModIndirect<T>) <= sizeof(storage));
       new (&storage) AnyModIndirect<T>();
     }
   }
@@ -235,11 +235,11 @@ struct AnyMod {
   template<typename T>
   AnyMod(type_tag<T>, T initial_val) {
     if constexpr(sizeof(T) <= 8) {
-      //static_assert(sizeof(AnyModInline<T>) <= 24);
+      static_assert(sizeof(AnyModInline<T>) <= sizeof(storage));
       new (&storage) AnyModInline<T>(std::move(initial_val));
     }
     else {
-      //static_assert(sizeof(AnyModIndirect<T>) <= 24);
+      static_assert(sizeof(AnyModIndirect<T>) <= sizeof(storage));
       new (&storage) AnyModIndirect<T>(std::move(initial_val));
     }
   }
@@ -247,14 +247,14 @@ struct AnyMod {
   // Create an array of modifiables of type T that are default initialized
   template<typename T>
   AnyMod(type_tag<T>, size_t size, default_array_tag) {
-    //static_assert(sizeof(AnyModArray<T>) <= 24);
+    static_assert(sizeof(AnyModArray<T>) <= sizeof(storage));
     new (&storage) AnyModArray<T>(size);
   }
 
   // Create an array of modifiables of type T each with the given initial value
   template<typename T>
   AnyMod(type_tag<T>, size_t size, T initial_val) {
-    //static_assert(sizeof(AnyModArray<T>) <= 24);
+    static_assert(sizeof(AnyModArray<T>) <= sizeof(storage));
     new (&storage) AnyModArray<T>(size, std::move(initial_val));
   }
 
@@ -305,7 +305,11 @@ struct AnyMod {
 
   ~AnyMod() { get_base()->~AnyModBase(); }
 
-  std::aligned_storage<24, 8>::type storage;
+#ifndef NDEBUG
+  alignas(8) std::byte storage[24];
+#else
+  alignas(8) std::byte storage[32];
+#endif
 };
 
 // A dynamic linked list of any modifiables (AnyMods)
@@ -692,7 +696,7 @@ struct GarbageCollector {
   GarbageCollector(size_t num_threads) : garbage(num_threads) { }
 
   ~GarbageCollector() {
-#ifndef DNDEBUG
+#ifndef NDEBUG
     for ([[maybe_unused]] const auto& pile : garbage) {
       assert(pile.empty() && "GARBAGE COLLECTOR SHOULD BE RAN BEFORE PROGRAM TERMINATION (PREFERABLY AFTER EACH ROUND OF PROPAGATION) TO AVOID THE GARBAGE-COLLECTED SP TREES FROM UNSUBSCRIBING TO DANGLING MOD POINTERS");
     }
@@ -809,7 +813,7 @@ void ModBase::notify_readers() {
 }
 
 void ModBase::add_reader(RNode* r) {
-#ifndef DNDEBUG
+#ifndef NDEBUG
   assert(written);
 #endif
   assert(r != nullptr);
@@ -817,7 +821,7 @@ void ModBase::add_reader(RNode* r) {
 }
 
 void ModBase::remove_reader(RNode* r) {
-#ifndef DNDEBUG
+#ifndef NDEBUG
   assert(written);
 #endif
   assert(r != nullptr);
@@ -834,14 +838,14 @@ Mod<T>::Mod(T initial_val) : value(std::move(initial_val)) { }
 // there will be pointers to them which could dangle
 template<typename T>
 Mod<T>::Mod(const Mod<T>&) {
-#ifndef DNDEBUG
+#ifndef NDEBUG
   assert(!written);
 #endif
 }
 
 template<typename T>
 Mod<T>& Mod<T>::operator=(const Mod<T>&) {
-#ifndef DNDEBUG
+#ifndef NDEBUG
   assert(!written);
 #endif
 }
@@ -850,21 +854,21 @@ Mod<T>& Mod<T>::operator=(const Mod<T>&) {
 // there will be pointers to them which could dangle
 template<typename T>
 Mod<T>::Mod(Mod<T>&&) {
-#ifndef DNDEBUG
+#ifndef NDEBUG
   assert(!written);
 #endif
 }
 
 template<typename T>
 Mod<T>& Mod<T>::operator=(Mod<T>&&) {
-#ifndef DNDEBUG
+#ifndef NDEBUG
   assert(!written);
 #endif
 }
   
 template<typename T>
 void Mod<T>::write(T new_value) {
-#ifndef DNDEBUG
+#ifndef NDEBUG
   if (!written || value != new_value) {
     value = std::move(new_value);
     notify_readers();

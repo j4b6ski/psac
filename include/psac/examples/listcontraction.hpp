@@ -177,7 +177,7 @@ struct DynamicSequence {
   void batch_join(const std::vector<std::pair<int,int>>& U) {
     parlay::parallel_for(0, U.size(), [&](auto j) {
       int u = U[j].first, v = U[j].second;
-#ifndef DNDEBUG
+#ifndef NDEBUG
       [[maybe_unused]] auto cur_r = getR(0, u);
       [[maybe_unused]] auto cur_l = getL(0, v);
       assert(cur_r == -1);

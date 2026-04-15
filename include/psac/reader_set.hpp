@@ -407,7 +407,7 @@ struct ConcurrentReaderSet {
         Node* new_root = build_tree(flattened, 0, size);
         assert(new_root != nullptr);
         root = mask_ptr(new_root);
-#ifndef DNDEBUG
+#ifndef NDEBUG
         assert(compute_tree_size(new_root) == size);
 #endif
       }
