@@ -2,10 +2,10 @@
 #                       Build system for PSAC++
 # -------------------------------------------------------------------
 # Requirements:
-#   - CMake version 3.13+
+#   - CMake version 3.14+
 # -------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.14)
 project(PSAC VERSION 1.0
              DESCRIPTION "Parallel Self-adjusting Computation for C++"
              LANGUAGES CXX)
@@ -35,7 +35,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fno-omit-
 add_library(psac INTERFACE)
 set(PSAC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 target_include_directories(psac INTERFACE ${PSAC_INCLUDE_DIR})
-target_compile_features(psac INTERFACE cxx_std_17)
+target_compile_features(psac INTERFACE cxx_std_23)
 
 # Link against system threads (always)
 find_package(Threads REQUIRED)
@@ -54,6 +54,18 @@ else()
   message("-- Found jemalloc: ${MALLOC_LIB}")
   target_link_libraries(psac INTERFACE optimized ${MALLOC_LIB})    
 endif()
+
+message(STATUS "fetching nlohmann/json")
+include(FetchContent)
+set(NLOHMANN_JSON_TAG "v3.12.0")
+FetchContent_Declare(
+        nlohmann_json
+        URL "https://github.com/nlohmann/json/releases/download/${NLOHMANN_JSON_TAG}/json.tar.xz"
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+        SYSTEM
+)
+FetchContent_MakeAvailable(nlohmann_json)
+target_link_libraries(psac INTERFACE nlohmann_json::nlohmann_json)
 
 # -------------------------------------------------------------------
 #                           Tests
