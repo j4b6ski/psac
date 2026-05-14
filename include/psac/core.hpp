@@ -183,8 +183,22 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
   return _mod_ptr->value;                                                     \
 }()
 
+#ifndef NDEBUG
+struct _psac_no_node{};
+std::unique_ptr<void>* _node;
+void* _parent;
+#define _PSAC_WRITE(_M, _value)                                               \
+do {                                                                          \
+  if constexpr (std::is_same_v<decltype(_node), std::unique_ptr<void>*>) {    \
+    (*(_M)).write(_value, _M);                                                \
+  } else {                                                                    \
+    (*(_M)).write(_value, (*_node) ? (*_node).get() : _parent);               \
+  }                                                                           \
+} while(0)
+#else
 #define _PSAC_WRITE(_M, _value)                                               \
   (*(_M)).write(_value)
+#endif
 
 #define _PSAC_PROPAGATE(_root)                                                \
   (_root).update()

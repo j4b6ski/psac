@@ -79,8 +79,8 @@ struct ModBase {
 
   // Only store the written flag when compiling for debugging
 #ifndef NDEBUG
-  bool written = false;
-#endif  
+  void* written = nullptr;
+#endif
 };
 
 template<typename T>
@@ -99,7 +99,11 @@ struct Mod : public ModBase {
   Mod(Mod<T>&&);
   Mod<T>& operator=(Mod<T>&&);
 
+#ifndef NDEBUG
+  void write(T new_value, void* writer);
+#else
   void write(T new_value);
+#endif
 
   T value;
 };
@@ -156,12 +160,10 @@ struct AnyModArray : public AnyModBase {
 
 template<typename T>
 struct AnyModInline : public AnyModBase {
+  static_assert(sizeof(T) <= sizeof(void*));
 
   AnyModInline() = default;
-  AnyModInline(T initial_val) : mod(std::move(initial_val)) {
-      static_assert(sizeof(T) <= 8);
-      static_assert(sizeof(Mod<T>) <= 16);
-  }
+  AnyModInline(T initial_val) : mod(std::move(initial_val)) { }
 
   const Mod<T>* get() const { return &mod; }
   Mod<T>* get() { return &mod; }
@@ -171,8 +173,7 @@ struct AnyModInline : public AnyModBase {
 
 template<typename T>
 struct AnyModIndirect : public AnyModBase {
-  static_assert(sizeof(T) > 8);
-  static_assert(sizeof(Mod<T>) > 16);
+  static_assert(sizeof(T) > sizeof(void*));
 
   AnyModIndirect() : mod(construct()) { }
   AnyModIndirect(T initial_val) : mod(construct(std::move(initial_val))) { }
@@ -221,7 +222,7 @@ struct AnyMod {
   // Create a modifiable of type T that is default initialized
   template<typename T>
   AnyMod(type_tag<T>) {
-    if constexpr(sizeof(T) <= 8) {
+    if constexpr(sizeof(T) <= sizeof(void*)) {
       static_assert(sizeof(AnyModInline<T>) <= sizeof(storage));
       new (&storage) AnyModInline<T>();
     }
@@ -234,7 +235,7 @@ struct AnyMod {
   // Create a modifiable of type T with the given initial value
   template<typename T>
   AnyMod(type_tag<T>, T initial_val) {
-    if constexpr(sizeof(T) <= 8) {
+    if constexpr(sizeof(T) <= sizeof(void*)) {
       static_assert(sizeof(AnyModInline<T>) <= sizeof(storage));
       new (&storage) AnyModInline<T>(std::move(initial_val));
     }
@@ -269,7 +270,7 @@ struct AnyMod {
   //
   // Asserts an error if the stored modifiable is not actually of type T
   template<typename T> Mod<T>* get() {
-    if constexpr (sizeof(T) <= 8) {
+    if constexpr (sizeof(T) <= sizeof(void*)) {
       assert(is_inline<T>());
       return static_cast<AnyModInline<T>*>(get_base())->get();
     }
@@ -866,15 +867,17 @@ Mod<T>& Mod<T>::operator=(Mod<T>&&) {
 #endif
 }
   
-template<typename T>
-void Mod<T>::write(T new_value) {
 #ifndef NDEBUG
+template<typename T>
+void Mod<T>::write(T new_value, void* writer) {
   if (!written || value != new_value) {
     value = std::move(new_value);
     notify_readers();
-    written = true;
+    written = writer;
   }
 #else
+template<typename T>
+void Mod<T>::write(T new_value) {
   if (value != new_value) {
     value = std::move(new_value);
     notify_readers();
