@@ -100,9 +100,9 @@ struct Mod : public ModBase {
   Mod<T>& operator=(Mod<T>&&);
 
 #ifndef NDEBUG
-  void write(T new_value, void* writer);
+  void _write(T new_value, void* writer);
 #else
-  void write(T new_value);
+  void _write(T new_value);
 #endif
 
   T value;
@@ -869,7 +869,7 @@ Mod<T>& Mod<T>::operator=(Mod<T>&&) {
   
 #ifndef NDEBUG
 template<typename T>
-void Mod<T>::write(T new_value, void* writer) {
+void Mod<T>::_write(T new_value, void* writer) {
   if (!written || value != new_value) {
     value = std::move(new_value);
     notify_readers();
@@ -877,7 +877,7 @@ void Mod<T>::write(T new_value, void* writer) {
   }
 #else
 template<typename T>
-void Mod<T>::write(T new_value) {
+void Mod<T>::_write(T new_value) {
   if (value != new_value) {
     value = std::move(new_value);
     notify_readers();
