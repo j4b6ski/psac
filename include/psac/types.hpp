@@ -144,6 +144,9 @@ template<typename T> struct type_tag { using type = T; };
 
 struct AnyModBase {
   virtual ~AnyModBase() = default;
+#ifndef NDEBUG
+  virtual std::vector<ModBase*> mods() = 0;
+#endif
 };
 
 template<typename T>
@@ -154,6 +157,14 @@ struct AnyModArray : public AnyModBase {
 
   ModArray<T>* get() { return &mod_array; }
   const ModArray<T>* get() const { return &mod_array; }
+
+#ifndef NDEBUG
+  std::vector<ModBase*> mods() override {
+    std::vector<ModBase*> r;
+    for (auto& m : mod_array) r.push_back(&m);
+    return r;
+  }
+#endif
 
   ModArray<T> mod_array;
 };
@@ -168,6 +179,10 @@ struct AnyModInline : public AnyModBase {
   const Mod<T>* get() const { return &mod; }
   Mod<T>* get() { return &mod; }
 
+#ifndef NDEBUG
+  std::vector<ModBase*> mods() override { return {&mod}; }
+#endif
+
   Mod<T> mod;
 };
 
@@ -180,6 +195,10 @@ struct AnyModIndirect : public AnyModBase {
 
   const Mod<T>* get() const { return mod.get(); }
   Mod<T>* get() { return mod.get(); }
+
+#ifndef NDEBUG
+  std::vector<ModBase*> mods() override { return {mod.get()}; }
+#endif
 
   template<typename... Args>
   Mod<T>* construct(Args&&... args) {
@@ -547,6 +566,10 @@ struct RNode : public SPNode {
   virtual void execute(std::unique_ptr<SPNode>& node) = 0;
 
   bool pending_update = false;
+
+#ifndef NDEBUG
+  virtual std::vector<ModBase*> get_read_mods() const = 0;
+#endif
 };
 
 template<typename READER_FUNCTION, typename... MOD_TYPES>
@@ -584,6 +607,18 @@ struct RTupleNode final : public RNode {
   std::tuple<MOD_TYPES...> mods;
 
   ~RTupleNode() { unsubscribe(); }
+
+#ifndef NDEBUG
+  std::vector<ModBase*> get_read_mods() const override
+  {
+      std::vector<ModBase*> result;
+      std::apply(
+          [&](auto... ms){ (result.push_back(ms), ...); },
+          mods
+      );
+      return result;
+  }
+#endif
 };
 
 template<typename READER_FUNCTION, typename Iter>
@@ -632,6 +667,15 @@ struct RArrayNode final : public RNode {
   
   READER_FUNCTION f;
   std::pair<Iter,Iter> range;
+
+#ifndef NDEBUG
+  std::vector<ModBase*> get_read_mods() const override {
+    std::vector<ModBase*> result;
+    for (auto it = range.first; it != range.second; ++it)
+      result.push_back(&(*it));
+    return result;
+  }
+#endif
 };
 
 template<typename READER_FUNCTION>
@@ -689,6 +733,13 @@ struct RScopeNode final : public RNode {
   
   READER_FUNCTION f;
   std::vector<ModBase*> mods;
+
+#ifndef NDEBUG
+  std::vector<ModBase*> get_read_mods() const override
+  {
+      return mods;
+  }
+#endif
 };
 
 // Garbage collector
