@@ -14,7 +14,7 @@ TEST_P(TestEditDistance, TestSingle) {
 
   // Input array of size 1
   psac::ModArray<std::string> in(1);
-  in[0].write("sitting");
+  psac_write(&in[0], "sitting");
   
   psac::Mod<int> res;
   auto comp = psac_run(reduce_edit_distance, std::begin(in), std::end(in), &s, &res);
@@ -28,10 +28,10 @@ TEST_P(TestEditDistance, TestMin) {
 
   // Input array of size 1
   psac::ModArray<std::string> in(4);
-  in[0].write("sitting");
-  in[1].write("sittan");
-  in[2].write("sitten");
-  in[3].write("gittang");
+  psac_write(&in[0], "sitting");
+  psac_write(&in[1], "sittan");
+  psac_write(&in[2], "sitten");
+  psac_write(&in[3], "gittang");
   
   psac::Mod<int> res;
   auto comp = psac_run(reduce_edit_distance, std::begin(in), std::end(in), &s, &res);

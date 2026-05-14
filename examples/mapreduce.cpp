@@ -16,7 +16,7 @@ int main() {
   int truesum = 0;
   srand(time(0));
   for (int i = 0; i < n; i++) {
-    A[i].write(rand() % 10);
+    psac_write(&A[i], rand() % 10);
     truesum += A[i].value;
   }
   
@@ -34,7 +34,7 @@ int main() {
   for (int i = 0; i < n; i++) {
     if ((rand() % 2) == 0) {
       int cur = A[i].value;
-      A[i].write(rand() % 10);
+      psac_write(&A[i], rand() % 10);
       truesum += A[i].value - cur;
     }
   }

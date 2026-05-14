@@ -136,12 +136,12 @@ psac_function(test_select, psac::Mod<int>* i, psac::Mod<int>* a, psac::Mod<int>*
 // results in a different structure
 TEST(TestPropagate, TestStructureChange) {
   psac::Mod<int> i, a, b, res;
-  i.write(1);
-  a.write(10);
-  b.write(20);
+  psac_write(&i, 1);
+  psac_write(&a, 10);
+  psac_write(&b, 20);
   auto comp = psac_run(test_select, &i, &a, &b, &res);
   ASSERT_EQ(res.value, 10);
-  i.write(2);
+  psac_write(&i, 2);
   psac_propagate(comp);
   ASSERT_EQ(res.value, 20);
   psac::GarbageCollector::run();

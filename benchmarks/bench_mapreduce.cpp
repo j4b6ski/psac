@@ -192,7 +192,7 @@ PSAC_DYNAMIC_BENCHMARK(map_chunks_update)(benchmark::State& state) {
       int v = dis_v(gen);
 
       A[j/chunk_size].value[j%chunk_size] = v;
-      A[j/chunk_size].write(A[j%chunk_size].value);
+      psac_write(&A[j/chunk_size], A[j%chunk_size].value);
     }
     state.ResumeTiming();
 
@@ -257,7 +257,7 @@ PSAC_DYNAMIC_BENCHMARK(shuffle_map_update)(benchmark::State& state) {
 
   std::vector<psac::Mod<int>> A(n);
   for (size_t i = 0; i < n; i++) {
-    A[i].write(i);
+    psac_write(&A[i], i);
   }
 
   std::vector<psac::Mod<int_chunk>> B(n_chunks);
@@ -278,7 +278,7 @@ PSAC_DYNAMIC_BENCHMARK(shuffle_map_update)(benchmark::State& state) {
     for (size_t i = 0; i < k; i++) {
       int j = dis_j(gen);
       int v = dis_v(gen);
-      A[j].write(v);
+      psac_write(&A[j], v);
     }
     state.ResumeTiming();
 

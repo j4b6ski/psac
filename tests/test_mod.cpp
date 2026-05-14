@@ -213,7 +213,7 @@ psac_function(test_alloc_inside_read, psac::Mod<int>* m) {
 
 TEST(TestMod, TestAllocInsideRead) {
   psac::Mod<int> m;
-  m.write(5);
+  psac_write(&m, 5);
   psac_run(test_alloc_inside_read, &m);
 }
 

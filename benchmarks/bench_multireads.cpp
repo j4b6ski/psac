@@ -28,7 +28,7 @@ static void bench_multireads(benchmark::State& state) {
   std::vector<psac::Mod<int>> outs(n);
 
   for (size_t i = 0; i < m; i++) {
-    ins[i].write(i);
+    psac_write(&ins[i], i);
   }
 
   std::random_device rd;
@@ -58,7 +58,7 @@ static void bench_multireads_update(benchmark::State& state) {
   std::vector<psac::Mod<int>> outs(n);
 
   for (size_t i = 0; i < m; i++) {
-    ins[i].write(i);
+    psac_write(&ins[i], i);
   }
 
   std::random_device rd;
@@ -78,7 +78,7 @@ static void bench_multireads_update(benchmark::State& state) {
     state.ResumeTiming();
 
     parlay::parallel_for(0,m, [&](int i) {
-      ins[i].write(new_vals[i]);
+      psac_write(&ins[i], new_vals[i]);
     });
 
     psac_propagate(comp);
