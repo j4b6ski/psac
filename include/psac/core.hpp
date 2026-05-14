@@ -184,6 +184,8 @@ void _name([[maybe_unused]] std::unique_ptr<psac::SPNode>*& _node,            \
 }()
 
 #ifndef NDEBUG
+#define _PSAC_STR(x) #x
+#define _PSAC_XSTR(x) _PSAC_STR(x)
 struct _psac_no_node{};
 std::unique_ptr<void>* _node;
 void* _parent;
@@ -194,6 +196,7 @@ do {                                                                          \
   } else {                                                                    \
     (*(_M))._write(_value, (*_node) ? (*_node).get() : _parent);              \
   }                                                                           \
+  (*(_M)).source = __FILE__ ":" _PSAC_XSTR(__LINE__);                         \
 } while(0)
 #else
 #define _PSAC_WRITE(_M, _value)                                               \

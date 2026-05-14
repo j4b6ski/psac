@@ -80,6 +80,7 @@ struct ModBase {
   // Only store the written flag when compiling for debugging
 #ifndef NDEBUG
   void* written = nullptr;
+  const char* source = nullptr;
 #endif
 };
 
@@ -326,7 +327,7 @@ struct AnyMod {
   ~AnyMod() { get_base()->~AnyModBase(); }
 
 #ifndef NDEBUG
-  alignas(8) std::byte storage[32];
+  alignas(8) std::byte storage[40];
 #else
   alignas(8) std::byte storage[24];
 #endif
