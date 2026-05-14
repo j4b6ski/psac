@@ -306,9 +306,9 @@ struct AnyMod {
   ~AnyMod() { get_base()->~AnyModBase(); }
 
 #ifndef NDEBUG
-  alignas(8) std::byte storage[24];
-#else
   alignas(8) std::byte storage[32];
+#else
+  alignas(8) std::byte storage[24];
 #endif
 };
 
