@@ -146,7 +146,7 @@ template<typename T> struct type_tag { using type = T; };
 struct AnyModBase {
   virtual ~AnyModBase() = default;
 #ifndef NDEBUG
-  virtual std::vector<ModBase*> mods() = 0;
+  virtual std::vector<ModBase*> mods() const = 0;
 #endif
 };
 
@@ -160,7 +160,7 @@ struct AnyModArray : public AnyModBase {
   const ModArray<T>* get() const { return &mod_array; }
 
 #ifndef NDEBUG
-  std::vector<ModBase*> mods() override {
+  std::vector<ModBase*> mods() const override {
     std::vector<ModBase*> r;
     for (auto& m : mod_array) r.push_back(&m);
     return r;
@@ -181,7 +181,7 @@ struct AnyModInline : public AnyModBase {
   Mod<T>* get() { return &mod; }
 
 #ifndef NDEBUG
-  std::vector<ModBase*> mods() override { return {&mod}; }
+  std::vector<ModBase*> mods() const override { return {&mod}; }
 #endif
 
   Mod<T> mod;

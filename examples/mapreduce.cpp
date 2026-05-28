@@ -5,9 +5,10 @@
 #include<random>
 
 #include <psac/psac.hpp>
+#include <psac/dump.hpp>
 #include <psac/examples/mapreduce.hpp>
 
-constexpr int n = 1000;
+constexpr int n = 10;
 std::array<psac::Mod<int>, n> A;
 std::array<psac::Mod<int>, n> B;
 
@@ -23,7 +24,8 @@ int main() {
   // Check the result
   psac::Mod<int> result;
   auto computation = psac_run(map_reduce, std::begin(A), std::end(A), std::begin(B), [](int x) { return 2*x; }, &result);
-  
+  debug_dump("run.json", computation, {&result});
+
   std::cout << "Values = ";
   for (int i = 0; i < n; i++) std::cout << A[i].value << " \n"[i == n-1];
   std::cout << "True sum = " << 2*truesum << std::endl;
@@ -39,6 +41,7 @@ int main() {
     }
   }
   psac_propagate(computation);
+  debug_dump("propagate.json", computation, {&result});
 
   std::cout << "Values = ";
   for (int i = 0; i < n; i++) std::cout << A[i].value << " \n"[i == n-1];
